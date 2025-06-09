@@ -1,11 +1,9 @@
 import React from 'react'
+import EventForm from '../components/EventForm'
 
-function CreateEVent() {
-  return (
-    <div>
-      
-    </div>
-  )
+const CreateEvent = () => {
+  return <EventForm />
 }
 
-export default CreateEVent
+export default CreateEvent
+// 
