@@ -1,80 +1,123 @@
-import React, { useState, useEffect } from 'react'
-import { TextField, Button, Box, Typography } from '@mui/material'
-import { supabase } from '../services/supabaseClient'
+import React, { useState, useEffect } from "react";
+import { TextField, Button, Box, Typography } from "@mui/material";
+import { supabase } from "../services/supabaseClient";
+import Swal from "sweetalert2";
 
 const EventForm = () => {
   const [eventData, setEventData] = useState({
-    title: '',
-    description: '',
-    date: '',
-    location: ''
-  })
+    title: "",
+    description: "",
+    date: "",
+    location: "",
+  });
 
-  const [userId, setUserId] = useState(null)
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
       if (error) {
-        console.error('Error obteniendo usuario:', error.message)
+        console.error("Error obteniendo usuario:", error.message);
       } else {
-        setUserId(user?.id)
+        setUserId(user?.id);
       }
-    }
+    };
 
-    fetchUser()
-  }, [])
+    fetchUser();
+  }, []);
 
   const handleChange = (e) => {
-    setEventData({ ...eventData, [e.target.name]: e.target.value })
-  }
+    setEventData({ ...eventData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!userId) {
-      alert('No se pudo identificar al usuario')
-      return
+      alert("No se pudo identificar al usuario");
+      return;
     }
 
     const newEvent = {
       ...eventData,
-      user_id: userId
-    }
+      user_id: userId,
+    };
 
-    const { error } = await supabase.from('events').insert([newEvent])
+    const { error } = await supabase.from("events").insert([newEvent]);
     if (error) {
-      console.error('Error insertando evento:', error.message)
+      Swal.fire("Error", "No se pudo crear el evento.", "error");
     } else {
-      alert('Evento creado correctamente')
-      setEventData({ title: '', description: '', date: '', location: '' })
+      Swal.fire(
+        "Evento creado",
+        "El evento ha sido registrado con éxito.",
+        "success"
+      );
+      setEventData({ title: "", description: "", date: "", location: "" });
     }
-  }
+  };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 500, mx: 'auto', mt: 4 }}>
-      <Typography variant="h5" gutterBottom>Crear nuevo evento</Typography>
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{ maxWidth: 500, mx: "auto", mt: 4 }}
+    >
+      <Typography variant="h5" gutterBottom>
+        Crear nuevo evento
+      </Typography>
       <TextField
-        fullWidth label="Título" name="title" value={eventData.title}
-        onChange={handleChange} margin="normal" required
+        fullWidth
+        label="Título"
+        name="title"
+        value={eventData.title}
+        onChange={handleChange}
+        margin="normal"
+        required
       />
       <TextField
-        fullWidth label="Descripción" name="description" value={eventData.description}
-        onChange={handleChange} margin="normal" multiline rows={3}
+        fullWidth
+        label="Descripción"
+        name="description"
+        value={eventData.description}
+        onChange={handleChange}
+        margin="normal"
+        multiline
+        rows={3}
       />
       <TextField
-        fullWidth label="Fecha" name="date" type="date" value={eventData.date}
-        onChange={handleChange} margin="normal" InputLabelProps={{ shrink: true }} required
+        fullWidth
+        label="Fecha"
+        name="date"
+        type="date"
+        value={eventData.date}
+        onChange={handleChange}
+        margin="normal"
+        InputLabelProps={{ shrink: true }}
+        required
       />
       <TextField
-        fullWidth label="Ubicación" name="location" value={eventData.location}
-        onChange={handleChange} margin="normal" required
+        fullWidth
+        label="Ubicación"
+        name="location"
+        value={eventData.location}
+        onChange={handleChange}
+        margin="normal"
+        required
       />
-      <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+      <Button
+        type="submit"
+        variant="contained"
+        color="primary"
+        fullWidth
+        sx={{ mt: 2 }}
+      >
         Crear evento
       </Button>
     </Box>
-  )
-}
+  );
+};
 
-export default EventForm
+export default EventForm;

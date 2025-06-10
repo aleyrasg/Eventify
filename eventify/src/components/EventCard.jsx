@@ -1,13 +1,18 @@
 import React from 'react'
-import { Card, CardContent, Typography, Box } from '@mui/material'
+import { Card, CardContent, Typography, Box, IconButton } from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete'
 
-const EventCard = ({ title, description, date, location }) => {
+const EventCard = ({ id, title, description, date, location, onDelete }) => {
+  const handleDelete = () => {
+    if (confirm('¿Seguro que quieres eliminar este evento?')) {
+      onDelete(id)
+    }
+  }
+
   return (
-    <Card sx={{ mb: 2, boxShadow: 3 }}>
+    <Card sx={{ mb: 2, boxShadow: 3, position: 'relative' }}>
       <CardContent>
-        <Typography variant="h6" component="div" gutterBottom>
-          {title}
-        </Typography>
+        <Typography variant="h6" gutterBottom>{title}</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           {description}
         </Typography>
@@ -16,6 +21,13 @@ const EventCard = ({ title, description, date, location }) => {
           <Typography variant="body2"><strong>Ubicación:</strong> {location}</Typography>
         </Box>
       </CardContent>
+      <IconButton
+        aria-label="eliminar"
+        onClick={handleDelete}
+        sx={{ position: 'absolute', top: 8, right: 8 }}
+      >
+        <DeleteIcon />
+      </IconButton>
     </Card>
   )
 }

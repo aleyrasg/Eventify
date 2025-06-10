@@ -1,16 +1,28 @@
-import React from 'react'
-import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Button } from '@mui/material'
-import EventIcon from '@mui/icons-material/Event'
-import AddIcon from '@mui/icons-material/Add'
-import { Link } from 'react-router-dom'
-import { supabase } from '../services/supabaseClient'
+import React from "react";
+import {
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Toolbar,
+  Button,
+} from "@mui/material";
+import EventIcon from "@mui/icons-material/Event";
+import AddIcon from "@mui/icons-material/Add";
+import { Link } from "react-router-dom";
+import { supabase } from "../services/supabaseClient";
+import Swal from "sweetalert2";
 
-const drawerWidth = 240
+const drawerWidth = 240;
 
 const handleLogout = async () => {
-  await supabase.auth.signOut()
-  window.location.href = '/login'
-}
+  await supabase.auth.signOut();
+  Swal.fire("Sesión cerrada", "Has cerrado sesión correctamente.", "info").then(
+    () => (window.location.href = "/login")
+  );
+};
 
 const Sidebar = () => {
   return (
@@ -19,20 +31,24 @@ const Sidebar = () => {
       sx={{
         width: drawerWidth,
         flexShrink: 0,
-        [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
+        [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: "border-box" },
       }}
     >
       <Toolbar />
       <List>
         <ListItem disablePadding>
           <ListItemButton component={Link} to="/">
-            <ListItemIcon><EventIcon /></ListItemIcon>
+            <ListItemIcon>
+              <EventIcon />
+            </ListItemIcon>
             <ListItemText primary="Inicio" />
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
           <ListItemButton component={Link} to="/crear">
-            <ListItemIcon><AddIcon /></ListItemIcon>
+            <ListItemIcon>
+              <AddIcon />
+            </ListItemIcon>
             <ListItemText primary="Crear evento" />
           </ListItemButton>
         </ListItem>
@@ -43,7 +59,7 @@ const Sidebar = () => {
         </ListItem>
       </List>
     </Drawer>
-  )
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;

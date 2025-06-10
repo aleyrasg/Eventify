@@ -7,6 +7,7 @@ import CreateEvent from "./pages/CreateEvent.jsx";
 import Layout from "./components/Layout.jsx";
 import RequireAuth from "./auth/RequireAuth";
 import Login from "./auth/Login";
+import Register from "./auth/Register.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -30,6 +31,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               </RequireAuth>
             }
           />
+
+          <Route path="/register" element={<Register />} />
         </Routes>
       </Layout>
     </Router>
