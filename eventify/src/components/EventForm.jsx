@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { TextField, Button, Box, Typography } from '@mui/material'
 import { supabase } from '../services/supabaseClient'
 
@@ -7,8 +7,23 @@ const EventForm = () => {
     title: '',
     description: '',
     date: '',
-    location: '',
+    location: ''
   })
+
+  const [userId, setUserId] = useState(null)
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error) {
+        console.error('Error obteniendo usuario:', error.message)
+      } else {
+        setUserId(user?.id)
+      }
+    }
+
+    fetchUser()
+  }, [])
 
   const handleChange = (e) => {
     setEventData({ ...eventData, [e.target.name]: e.target.value })
@@ -16,9 +31,20 @@ const EventForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const { error } = await supabase.from('events').insert([eventData])
+
+    if (!userId) {
+      alert('No se pudo identificar al usuario')
+      return
+    }
+
+    const newEvent = {
+      ...eventData,
+      user_id: userId
+    }
+
+    const { error } = await supabase.from('events').insert([newEvent])
     if (error) {
-      console.error('Error insertando evento:', error)
+      console.error('Error insertando evento:', error.message)
     } else {
       alert('Evento creado correctamente')
       setEventData({ title: '', description: '', date: '', location: '' })
