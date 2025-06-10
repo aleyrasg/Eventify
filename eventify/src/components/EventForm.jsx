@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { TextField, Button, Box, Typography } from "@mui/material";
+import { MenuItem, Select, InputLabel, FormControl } from "@mui/material";
 import { supabase } from "../services/supabaseClient";
 import Swal from "sweetalert2";
 
@@ -9,7 +10,17 @@ const EventForm = () => {
     description: "",
     date: "",
     location: "",
+    type_id: "",
   });
+
+  const [eventTypes, setEventTypes] = useState([]);
+  useEffect(() => {
+    const fetchTypes = async () => {
+      const { data, error } = await supabase.from("event_types").select("*");
+      if (!error) setEventTypes(data);
+    };
+    fetchTypes();
+  }, []);
 
   const [userId, setUserId] = useState(null);
 
@@ -107,6 +118,23 @@ const EventForm = () => {
         margin="normal"
         required
       />
+      <FormControl fullWidth margin="normal" required>
+        <InputLabel id="type-label">Tipo de evento</InputLabel>
+        <Select
+          labelId="type-label"
+          name="type_id"
+          value={eventData.type_id || ""}
+          label="Tipo de evento"
+          onChange={handleChange}
+        >
+          {eventTypes.map((type) => (
+            <MenuItem key={type.id} value={type.id}>
+              {type.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
       <Button
         type="submit"
         variant="contained"

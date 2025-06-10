@@ -4,22 +4,32 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import App from "./App.jsx";
 import Home from "./pages/Home.jsx";
 import CreateEvent from "./pages/CreateEvent.jsx";
-import Layout from "./components/Layout.jsx";
-import RequireAuth from "./auth/RequireAuth";
-import Login from "./auth/Login";
+import EditarEvento from "./pages/EditarEvento.jsx";
+import RequireAuth from "./auth/RequireAuth.jsx";
+import Login from "./auth/Login.jsx";
 import Register from "./auth/Register.jsx";
+import Layout from "./components/Layout.jsx";
+import theme from "./theme.jsx";
+import { ThemeProvider, CssBaseline } from "@mui/material";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <Router>
-      <Layout>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Router>
         <Routes>
+          {/* Rutas públicas */}
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
+          {/* Rutas protegidas bajo layout */}
           <Route
             path="/"
             element={
               <RequireAuth>
-                <Home />
+                <Layout>
+                  <Home />
+                </Layout>
               </RequireAuth>
             }
           />
@@ -27,14 +37,24 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             path="/crear"
             element={
               <RequireAuth>
-                <CreateEvent />
+                <Layout>
+                  <CreateEvent />
+                </Layout>
               </RequireAuth>
             }
           />
-
-          <Route path="/register" element={<Register />} />
+          <Route
+            path="/editar/:id"
+            element={
+              <RequireAuth>
+                <Layout>
+                  <EditarEvento />
+                </Layout>
+              </RequireAuth>
+            }
+          />
         </Routes>
-      </Layout>
-    </Router>
+      </Router>
+    </ThemeProvider>
   </React.StrictMode>
 );

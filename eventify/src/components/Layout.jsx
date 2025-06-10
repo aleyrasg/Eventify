@@ -6,9 +6,16 @@ const drawerWidth = 240
 
 const Layout = ({ children }) => {
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', backgroundColor: '#fff0ff', minHeight: '100vh' }}>
       <Sidebar />
-      <Box component="main" sx={{ flexGrow: 1, p: 3, ml: `${drawerWidth}px` }}>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          ml: `${drawerWidth}px`
+        }}
+      >
         <Toolbar />
         {children}
       </Box>

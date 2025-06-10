@@ -3,20 +3,35 @@ import { supabase } from "../services/supabaseClient";
 import EventCard from "../components/EventCard";
 import { Container, Typography, CircularProgress } from "@mui/material";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchEvents = async () => {
     setLoading(true);
+
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData?.user) {
+      Swal.fire("Error", "No se pudo obtener el usuario actual.", "error");
+      return navigate("/login");
+    }
+
+    const userId = authData.user.id;
+
     const { data, error } = await supabase
       .from("events")
       .select("*")
+      .eq("user_id", userId)
       .order("date", { ascending: true });
 
-    if (error) console.error("Error al obtener eventos:", error.message);
-    else setEvents(data);
+    if (error) {
+      console.error("Error al obtener eventos:", error.message);
+    } else {
+      setEvents(data);
+    }
 
     setLoading(false);
   };
@@ -70,6 +85,7 @@ const Home = () => {
             date={event.date}
             location={event.location}
             onDelete={handleDelete}
+            onEdit={(id) => navigate(`/editar/${id}`)}
           />
         ))
       ) : (
