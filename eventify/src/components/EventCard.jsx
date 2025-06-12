@@ -1,9 +1,11 @@
 import React from "react";
-import { Card, CardContent, Typography, IconButton, Box } from "@mui/material";
+import { Card, CardContent, Typography, IconButton, Box, Button } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import { useNavigate } from "react-router-dom";
 
 const EventCard = ({ event, onDelete, onEdit }) => {
+  const navigate = useNavigate();
   return (
     <Card
       sx={{
@@ -44,6 +46,15 @@ const EventCard = ({ event, onDelete, onEdit }) => {
             <strong>Ubicación:</strong> {event.location || "No definida"}
           </Typography>
         </Box>
+
+        <Button
+          size="small"
+          variant="outlined"
+          sx={{ mt: 1, borderColor: "#6a1b9a", color: "#6a1b9a" }}
+          onClick={() => navigate(`/evento/${event.id}/invitados`)}
+        >
+          Ver invitados
+        </Button>
       </CardContent>
 
       <Box sx={{ position: "absolute", top: 8, right: 8 }}>

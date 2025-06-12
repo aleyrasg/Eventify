@@ -11,6 +11,7 @@ import Register from "./auth/Register.jsx";
 import Layout from "./components/Layout.jsx";
 import theme from "./theme.jsx";
 import { ThemeProvider, CssBaseline } from "@mui/material";
+import InvitadosEvento from "./pages/InvitadosEvento.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -49,6 +50,16 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               <RequireAuth>
                 <Layout>
                   <EditarEvento />
+                </Layout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/evento/:id/invitados"
+            element={
+              <RequireAuth>
+                <Layout>
+                  <InvitadosEvento />
                 </Layout>
               </RequireAuth>
             }
