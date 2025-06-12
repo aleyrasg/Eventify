@@ -1,9 +1,20 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
-import { TextField, Button, Box, Typography } from "@mui/material";
-import { MenuItem, Select, InputLabel, FormControl } from "@mui/material";
-
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
+} from "@mui/material";
 import Swal from "sweetalert2";
 
 const EditarEvento = () => {
@@ -15,76 +26,52 @@ const EditarEvento = () => {
     description: "",
     date: "",
     location: "",
-    type_id: "",
+    type_id: ""
   });
 
   const [eventTypes, setEventTypes] = useState([]);
-
-  useEffect(() => {
-    const fetchTypes = async () => {
-      const { data, error } = await supabase.from("event_types").select("*");
-      if (!error) setEventTypes(data);
-    };
-    fetchTypes();
-  }, []);
-
+  const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [openDialog, setOpenDialog] = useState(false);
+  const [newLocation, setNewLocation] = useState("");
 
   useEffect(() => {
     const fetchEvent = async () => {
-      try {
-        console.log("Fetching event with ID:", id);
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .eq("id", id)
+        .single();
 
-        // Obtener usuario actual
-        const { data: authData, error: authError } =
-          await supabase.auth.getUser();
-        if (authError || !authData?.user) {
-          Swal.fire(
-            "Error",
-            "No se pudo obtener el usuario autenticado.",
-            "error"
-          );
-          return navigate("/login");
-        }
-
-        const user = authData.user;
-
-        // Obtener el evento
-        const { data: event, error: eventError } = await supabase
-          .from("events")
-          .select("*")
-          .eq("id", id)
-          .single();
-
-        if (eventError) {
-          Swal.fire("Error", "No se pudo cargar el evento.", "error");
-          return navigate("/");
-        }
-
-        // Verificar propiedad del evento
-        if (event.user_id !== user.id) {
-          Swal.fire(
-            "Acceso denegado",
-            "No puedes editar un evento que no es tuyo.",
-            "error"
-          );
-          return navigate("/");
-        }
-
-        console.log("Evento autorizado:", event);
-        setEventData(event);
-      } catch (err) {
-        console.error("Unexpected error:", err);
-        Swal.fire("Error", "Error inesperado al cargar el evento.", "error");
+      if (error) {
+        Swal.fire("Error", "No se pudo cargar el evento.", "error");
         navigate("/");
-      } finally {
-        setLoading(false);
+      } else {
+        setEventData(data);
       }
+
+      setLoading(false);
     };
 
-    if (id) fetchEvent();
-    else navigate("/");
+    fetchEvent();
   }, [id, navigate]);
+
+  useEffect(() => {
+    const fetchAuxData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const [typesResult, locationsResult] = await Promise.all([
+        supabase.from("event_types").select("*"),
+        supabase.from("locations").select("*").eq("user_id", user.id),
+      ]);
+
+      if (!typesResult.error) setEventTypes(typesResult.data);
+      if (!locationsResult.error) setLocations(locationsResult.data);
+    };
+
+    fetchAuxData();
+  }, []);
 
   const handleChange = (e) => {
     setEventData({ ...eventData, [e.target.name]: e.target.value });
@@ -93,21 +80,13 @@ const EditarEvento = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (eventData.title.trim() === "" || eventData.location.trim() === "") {
-      Swal.fire(
-        "Campos requeridos",
-        "El título y la ubicación son obligatorios.",
-        "warning"
-      );
-      return;
-    }
-
-    if (!eventData.date) {
-      Swal.fire(
-        "Fecha requerida",
-        "Por favor, elige una fecha válida.",
-        "warning"
-      );
+    if (
+      !eventData.title ||
+      !eventData.date ||
+      !eventData.location ||
+      !eventData.type_id
+    ) {
+      Swal.fire("Campos requeridos", "Completa todos los campos obligatorios.", "warning");
       return;
     }
 
@@ -116,44 +95,27 @@ const EditarEvento = () => {
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Guardar",
-      cancelButtonText: "Cancelar",
+      cancelButtonText: "Cancelar"
     });
 
     if (!result.isConfirmed) return;
 
-    try {
-      console.log("Updating event with ID:", id); // Debug log
-      console.log("Update data:", eventData); // Debug log
+    const { error } = await supabase
+      .from("events")
+      .update({
+        title: eventData.title,
+        description: eventData.description,
+        date: eventData.date,
+        location: eventData.location,
+        type_id: eventData.type_id,
+      })
+      .eq("id", id);
 
-      const { data, error } = await supabase
-        .from("events")
-        .update({
-          title: eventData.title,
-          description: eventData.description,
-          date: eventData.date,
-          location: eventData.location,
-        })
-        .eq("id", id)
-        .select(); // Add .select() to return updated data
-
-      if (error) {
-        console.error("Update error:", error); // Debug log
-        Swal.fire(
-          "Error",
-          `No se pudo actualizar el evento: ${error.message}`,
-          "error"
-        );
-      } else {
-        console.log("Event updated successfully:", data); // Debug log
-        Swal.fire(
-          "Actualizado",
-          "El evento fue actualizado con éxito.",
-          "success"
-        ).then(() => navigate("/"));
-      }
-    } catch (err) {
-      console.error("Unexpected error during update:", err);
-      Swal.fire("Error", "Error inesperado al actualizar el evento.", "error");
+    if (error) {
+      Swal.fire("Error", "No se pudo actualizar el evento.", "error");
+    } else {
+      Swal.fire("Actualizado", "El evento fue actualizado con éxito.", "success")
+        .then(() => navigate("/"));
     }
   };
 
@@ -168,45 +130,65 @@ const EditarEvento = () => {
       <Typography variant="h5" gutterBottom>
         Editar evento
       </Typography>
+
       <TextField
+        fullWidth
         label="Título"
         name="title"
         value={eventData.title}
         onChange={handleChange}
-        fullWidth
         margin="normal"
         required
       />
+
       <TextField
+        fullWidth
         label="Descripción"
         name="description"
         value={eventData.description}
         onChange={handleChange}
-        fullWidth
         margin="normal"
         multiline
         rows={3}
       />
+
       <TextField
+        fullWidth
         label="Fecha"
         name="date"
         type="date"
         value={eventData.date}
         onChange={handleChange}
-        fullWidth
         margin="normal"
         InputLabelProps={{ shrink: true }}
         required
       />
-      <TextField
-        label="Ubicación"
-        name="location"
-        value={eventData.location}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-        required
-      />
+
+      <FormControl fullWidth margin="normal" required>
+        <InputLabel id="location-label">Ubicación</InputLabel>
+        <Select
+          labelId="location-label"
+          name="location"
+          value={eventData.location}
+          label="Ubicación"
+          onChange={handleChange}
+        >
+          {locations.map((loc) => (
+            <MenuItem key={loc.id} value={loc.name}>
+              {loc.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <Button
+        variant="outlined"
+        onClick={() => setOpenDialog(true)}
+        sx={{ mt: 1 }}
+      >
+        + Nueva ubicación
+      </Button>
+
       <FormControl fullWidth margin="normal" required>
         <InputLabel id="type-label">Tipo de evento</InputLabel>
         <Select
@@ -227,6 +209,54 @@ const EditarEvento = () => {
       <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
         Guardar cambios
       </Button>
+
+      {/* Diálogo para nueva ubicación */}
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Nueva ubicación</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Nombre de la ubicación"
+            fullWidth
+            value={newLocation}
+            onChange={(e) => setNewLocation(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>
+          <Button
+            onClick={async () => {
+              if (!newLocation.trim()) {
+                Swal.fire("Campo vacío", "Ingresa un nombre válido.", "warning");
+                return;
+              }
+
+              const { data: { user } } = await supabase.auth.getUser();
+
+              const { data, error } = await supabase
+                .from("locations")
+                .insert([{ name: newLocation.trim(), user_id: user.id }])
+                .select();
+
+              if (error) {
+                Swal.fire("Error", "No se pudo guardar la ubicación.", "error");
+              } else {
+                setLocations((prev) => [...prev, ...data]);
+                setEventData((prev) => ({
+                  ...prev,
+                  location: data[0].name,
+                }));
+                setNewLocation("");
+                setOpenDialog(false);
+                Swal.fire("¡Ubicación añadida!", "", "success");
+              }
+            }}
+          >
+            Guardar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
