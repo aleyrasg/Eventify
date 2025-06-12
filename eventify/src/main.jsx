@@ -12,6 +12,8 @@ import Layout from "./components/Layout.jsx";
 import theme from "./theme.jsx";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import InvitadosEvento from "./pages/InvitadosEvento.jsx";
+import RecordatoriosEvento from "./pages/RecordatoriosEvento";
+import TareasEvento from "./pages/TareasEvento";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -60,6 +62,26 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               <RequireAuth>
                 <Layout>
                   <InvitadosEvento />
+                </Layout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/evento/:id/recordatorios"
+            element={
+              <RequireAuth>
+                <Layout>
+                  <RecordatoriosEvento />
+                </Layout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/evento/:id/tareas"
+            element={
+              <RequireAuth>
+                <Layout>
+                  <TareasEvento />
                 </Layout>
               </RequireAuth>
             }
